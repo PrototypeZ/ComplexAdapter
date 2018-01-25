@@ -1,30 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools">
-    <ScrollView android:layout_width="match_parent"
-                android:layout_height="match_parent">
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                tools:context="prototypez.github.io.complexadapter.demo.MainActivity">
-
+>
+    <RelativeLayout android:layout_width="match_parent"
+                    android:layout_height="match_parent">
             <android.support.v7.widget.RecyclerView
                     android:id="@+id/rv1"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
-
-            <android.support.v7.widget.RecyclerView
-                    android:id="@+id/rv2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
-
+                    android:layout_height="match_parent"/>
             <Button
                     android:id="@+id/refresh"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_margin="20dp"
                     android:text="Refresh"/>
-        </LinearLayout>
-    </ScrollView>
+    </RelativeLayout>
 </layout>
