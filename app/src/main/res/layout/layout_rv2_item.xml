@@ -4,13 +4,14 @@
         xmlns:tools="http://schemas.android.com/tools">
 
     <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="30dp">
+            android:layout_width="match_parent"
+            android:layout_height="100dp">
         <TextView
                 android:id="@+id/tv"
                 android:background="@android:color/holo_blue_bright"
                 android:textColor="@android:color/white"
                 tools:text="hello"
+                android:gravity="center"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
     </RelativeLayout>

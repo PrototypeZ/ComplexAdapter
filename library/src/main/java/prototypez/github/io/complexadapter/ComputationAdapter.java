@@ -117,21 +117,31 @@ public class ComputationAdapter extends RecyclerView.Adapter {
     public int getItemViewType(int position) {
         SubAdapterInfo subAdapterInfo = findSubAdapterInfoByPosition(position);
         int globalTypeOffset = subAdapterTypeMap.get(subAdapterInfo.subAdapter);
-        return globalTypeOffset * 1000 + subAdapterInfo.subAdapter.getItemViewTypeInside(viewData, subAdapterInfo.relativePosition);
+        return globalTypeOffset * 1000 + subAdapterInfo.subAdapter.getItemViewTypeInside(
+                viewData.subList(subAdapterInfo.sectionStartIndex, subAdapterInfo.sectionStartIndex + subAdapterInfo.size),
+                subAdapterInfo.relativePosition
+        );
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        int globalViewType = viewType / 1000;
         int innerViewType = viewType % 1000;
-        SubAdapter subAdapter = typeSubAdapterMap.get(globalViewType);
-        return subAdapter.onCreateViewHolderInside(viewData, parent, innerViewType);
+        SubAdapterInfo subAdapterInfo = findSubAdapterInfoByViewType(viewType);
+        return subAdapterInfo.subAdapter.onCreateViewHolderInside(
+                viewData.subList(subAdapterInfo.sectionStartIndex, subAdapterInfo.sectionStartIndex + subAdapterInfo.size),
+                parent,
+                innerViewType
+        );
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         SubAdapterInfo subAdapterInfo = findSubAdapterInfoByPosition(position);
-        subAdapterInfo.subAdapter.onBindViewHolderInside(viewData, holder, subAdapterInfo.relativePosition);
+        subAdapterInfo.subAdapter.onBindViewHolderInside(
+                viewData.subList(subAdapterInfo.sectionStartIndex, subAdapterInfo.sectionStartIndex + subAdapterInfo.size),
+                holder,
+                subAdapterInfo.relativePosition
+        );
     }
 
     @Override
@@ -145,7 +155,7 @@ public class ComputationAdapter extends RecyclerView.Adapter {
             Section section = mSections.get(i);
             int size = section.adapterData.size();
             if (cursor <= position && position < cursor + size) {
-                return new SubAdapterInfo(mSubAdapters.get(i), position - cursor, i);
+                return new SubAdapterInfo(mSubAdapters.get(i), position - cursor, cursor, size, i);
             } else {
                 cursor += size;
             }
@@ -153,14 +163,30 @@ public class ComputationAdapter extends RecyclerView.Adapter {
         return null;
     }
 
+    private SubAdapterInfo findSubAdapterInfoByViewType(int viewType) {
+        int globalViewType = viewType / 1000;
+        SubAdapter subAdapter = typeSubAdapterMap.get(globalViewType);
+        int index = mSubAdapters.indexOf(subAdapter);
+        int start = 0;
+        for (int i = 0; i < index; i++) {
+            start += mSections.get(i).adapterData.size();
+        }
+
+        return new SubAdapterInfo(subAdapter, 0, start, mSections.get(index).adapterData.size(), index);
+    }
+
     class SubAdapterInfo {
         SubAdapter subAdapter;
         int relativePosition;
+        int sectionStartIndex;
+        int size;
         int adapterIndex;
 
-        SubAdapterInfo(SubAdapter subAdapter, int relativePosition, int adapterIndex) {
+        SubAdapterInfo(SubAdapter subAdapter, int relativePosition, int sectionStartIndex, int size, int adapterIndex) {
             this.subAdapter = subAdapter;
             this.relativePosition = relativePosition;
+            this.sectionStartIndex = sectionStartIndex;
+            this.size = size;
             this.adapterIndex = adapterIndex;
         }
     }

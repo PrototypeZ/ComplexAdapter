@@ -10,12 +10,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
-import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 import prototypez.github.io.complexadapter.AdapterItem;
 import prototypez.github.io.complexadapter.ComplexAdapter;
@@ -40,9 +40,11 @@ public class MainActivity extends AppCompatActivity {
         ComplexAdapter adapter = new ComplexAdapter(
                 Arrays.asList(
                         new Adapter1(Arrays.asList(new Entity("a"), new Entity("b"))),
-                        new Adapter2(Arrays.asList(new Entity("c"), new Entity("d")))
+                        new Adapter2(Arrays.asList(new Entity("c"), new Entity("d"))),
+                        new Adapter3(),
+                        new Adapter4()
                 ),
-                Arrays.asList(1, 2)
+                Arrays.asList(1, 2, 3, 4)
         );
 
         mBinding.rv1.setAdapter(adapter);
@@ -174,6 +176,102 @@ public class MainActivity extends AppCompatActivity {
             return Observable
                     .just(Arrays.asList(new Entity("1"), new Entity("2"), new Entity("3"), new Entity("4")))
                     .delay(1000, TimeUnit.MILLISECONDS)
+                    .observeOn(Schedulers.io());
+        }
+
+        @Override
+        public int getItemViewTypeInside(List<Entity> data, int position) {
+            return 0;
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolderInside(List<Entity> data, ViewGroup parent, int viewType) {
+            return new ViewHolder(
+                    LayoutInflater.from(parent.getContext()).inflate(
+                            R.layout.layout_rv2_item,
+                            parent,
+                            false
+                    )
+            );
+        }
+
+        @Override
+        public void onBindViewHolderInside(List<Entity> data, ViewHolder holder, int position) {
+            holder.tv.setText(data.get(position).data);
+        }
+    }
+
+
+    class Adapter3 extends RecyclerView.Adapter<ViewHolder> implements SubAdapter<Entity, ViewHolder> {
+
+        List<Entity> mEntities = new ArrayList<>();
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            return onCreateViewHolderInside(mEntities, parent, viewType);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            onBindViewHolderInside(mEntities, holder, position);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mEntities.size();
+        }
+
+        // SubAdapter implementation
+
+        @Override
+        public Observable<List<Entity>> refreshData() {
+            return Observable
+                    .just(Arrays.asList(
+                            new Entity("1"), new Entity("2"), new Entity("3"), new Entity("4"),
+                            new Entity("5"), new Entity("6"), new Entity("7"), new Entity("8")/*,
+                            new Entity("9"), new Entity("10"), new Entity("11"), new Entity("12"),
+                            new Entity("13"), new Entity("14"), new Entity("15"), new Entity("16"),
+                            new Entity("17"), new Entity("18"), new Entity("19"), new Entity("20"),
+                            new Entity("21"), new Entity("22"), new Entity("23"), new Entity("24")*/
+                    ))
+                    .delay(3000, TimeUnit.MILLISECONDS)
+                    .observeOn(Schedulers.io());
+        }
+
+        @Override
+        public int getItemViewTypeInside(List<Entity> data, int position) {
+            return 0;
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolderInside(List<Entity> data, ViewGroup parent, int viewType) {
+            return new ViewHolder(
+                    LayoutInflater.from(parent.getContext()).inflate(
+                            R.layout.layout_rv1_item,
+                            parent,
+                            false
+                    )
+            );
+        }
+
+        @Override
+        public void onBindViewHolderInside(List<Entity> data, ViewHolder holder, int position) {
+            holder.tv.setText(data.get(position).data);
+        }
+    }
+
+    class Adapter4 implements SubAdapter<Entity, ViewHolder> {
+
+        // SubAdapter implementation
+
+        @Override
+        public Observable<List<Entity>> refreshData() {
+            return Observable
+                    .just(Arrays.asList(
+                            new Entity("a"), new Entity("b"), new Entity("c"), new Entity("d"),
+                            new Entity("e"), new Entity("f"), new Entity("g"), new Entity("h")
+                    ))
+                    .delay(4000, TimeUnit.MILLISECONDS)
                     .observeOn(Schedulers.io());
         }
 
