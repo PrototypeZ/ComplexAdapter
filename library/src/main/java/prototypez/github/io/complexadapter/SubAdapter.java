@@ -15,15 +15,21 @@ public interface SubAdapter<T extends AdapterItem, VH extends RecyclerView.ViewH
 
     Observable<List<T>> refreshData();
 
+    int getItemCount(List<T> data);
+
     /**
      *
      * @param data
      * @param position
      * @return 0 <= itemType< 999
      */
-    int getItemViewTypeInside(List<T> data, int position);
+    default int getItemViewTypeInside(List<T> data, int position) {
+        return 0;
+    }
 
     VH onCreateViewHolderInside(List<T> data, ViewGroup parent, int viewType);
 
     void onBindViewHolderInside(List<T> data, VH holder, int position);
+
+    Object getRepresentObjectAt(List<T> data, int position);
 }

@@ -21,13 +21,10 @@ public class ComputationAdapter extends RecyclerView.Adapter {
 
     static class Section {
         int index;
-        // Assume 每个 section adapterClass 都不一样
-        Class adapterClass;
         List<AdapterItem> adapterData;
 
-        Section(int index, Class adapterClass, List<AdapterItem> adapterData) {
+        Section(int index, List<AdapterItem> adapterData) {
             this.index = index;
-            this.adapterClass = adapterClass;
             this.adapterData = adapterData;
         }
     }
@@ -40,32 +37,48 @@ public class ComputationAdapter extends RecyclerView.Adapter {
 
     private SparseArray<SubAdapter> typeSubAdapterMap = new SparseArray<>();
 
-    private List<AdapterItem> viewData = new ArrayList<>();
-
     DiffUtil.DiffResult compare(ComputationAdapter oldAdapter) {
         return DiffUtil.calculateDiff(new DiffUtil.Callback() {
             @Override
             public int getOldListSize() {
-                return oldAdapter.viewData.size();
+                return oldAdapter.getItemCount();
             }
 
             @Override
             public int getNewListSize() {
-                return viewData.size();
+                return getItemCount();
             }
 
             @Override
             public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-                int oldAdapterType = oldAdapter.getItemViewType(oldItemPosition);
-                int newAdapterType = getItemViewType(newItemPosition);
-                return oldAdapterType == newAdapterType && oldAdapter.viewData.get(oldItemPosition).isItemTheSameTo(viewData.get(newItemPosition));
+                if (oldAdapter.getItemViewType(oldItemPosition) != getItemViewType(newItemPosition)) {
+                    return false;
+                } else {
+                    Object oldRepresentObj = oldAdapter.getRepresentObjectAt(oldItemPosition);
+                    Object newRepresentObj = getRepresentObjectAt(newItemPosition);
+                    if (oldRepresentObj instanceof AdapterItem && newRepresentObj instanceof AdapterItem) {
+                        return ((AdapterItem) oldRepresentObj).isItemTheSameTo((AdapterItem) newRepresentObj);
+                    } else
+                        return !(oldRepresentObj instanceof AdapterItem)
+                                && !(newRepresentObj instanceof AdapterItem)
+                                && oldRepresentObj.equals(newRepresentObj);
+                }
             }
 
             @Override
             public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-                int oldAdapterType = oldAdapter.getItemViewType(oldItemPosition);
-                int newAdapterType = getItemViewType(newItemPosition);
-                return oldAdapterType == newAdapterType && oldAdapter.viewData.get(oldItemPosition).isContentTheSameTo(viewData.get(newItemPosition));
+                if (oldAdapter.getItemViewType(oldItemPosition) != getItemViewType(newItemPosition)) {
+                    return false;
+                } else {
+                    Object oldRepresentObj = oldAdapter.getRepresentObjectAt(oldItemPosition);
+                    Object newRepresentObj = getRepresentObjectAt(newItemPosition);
+                    if (oldRepresentObj instanceof AdapterItem && newRepresentObj instanceof AdapterItem) {
+                        return ((AdapterItem) oldRepresentObj).isContentTheSameTo((AdapterItem) newRepresentObj);
+                    } else
+                        return !(oldRepresentObj instanceof AdapterItem)
+                                && !(newRepresentObj instanceof AdapterItem)
+                                && oldRepresentObj.equals(newRepresentObj);
+                }
             }
         });
     }
@@ -79,7 +92,6 @@ public class ComputationAdapter extends RecyclerView.Adapter {
             SubAdapter subAdapter = subAdapters.get(i);
             subAdapterTypeMap.put(subAdapter, subAdapterTypes.get(i));
             typeSubAdapterMap.put(subAdapterTypes.get(i), subAdapter);
-            viewData.addAll(sections.get(i).adapterData);
         }
     }
 
@@ -107,7 +119,7 @@ public class ComputationAdapter extends RecyclerView.Adapter {
             Section oldSection = mSections.get(i);
             List<AdapterItem> adapterItems = new ArrayList<>();
             adapterItems.addAll(oldSection.adapterData);
-            Section section = new Section(oldSection.index, oldSection.adapterClass, adapterItems);
+            Section section = new Section(oldSection.index, adapterItems);
             sections.add(section);
         }
         return sections;
@@ -118,7 +130,7 @@ public class ComputationAdapter extends RecyclerView.Adapter {
         SubAdapterInfo subAdapterInfo = findSubAdapterInfoByPosition(position);
         int globalTypeOffset = subAdapterTypeMap.get(subAdapterInfo.subAdapter);
         return globalTypeOffset * 1000 + subAdapterInfo.subAdapter.getItemViewTypeInside(
-                viewData.subList(subAdapterInfo.sectionStartIndex, subAdapterInfo.sectionStartIndex + subAdapterInfo.size),
+                mSections.get(subAdapterInfo.adapterIndex).adapterData,
                 subAdapterInfo.relativePosition
         );
     }
@@ -128,7 +140,7 @@ public class ComputationAdapter extends RecyclerView.Adapter {
         int innerViewType = viewType % 1000;
         SubAdapterInfo subAdapterInfo = findSubAdapterInfoByViewType(viewType);
         return subAdapterInfo.subAdapter.onCreateViewHolderInside(
-                viewData.subList(subAdapterInfo.sectionStartIndex, subAdapterInfo.sectionStartIndex + subAdapterInfo.size),
+                mSections.get(subAdapterInfo.adapterIndex).adapterData,
                 parent,
                 innerViewType
         );
@@ -138,24 +150,37 @@ public class ComputationAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         SubAdapterInfo subAdapterInfo = findSubAdapterInfoByPosition(position);
         subAdapterInfo.subAdapter.onBindViewHolderInside(
-                viewData.subList(subAdapterInfo.sectionStartIndex, subAdapterInfo.sectionStartIndex + subAdapterInfo.size),
+                mSections.get(subAdapterInfo.adapterIndex).adapterData,
                 holder,
+                subAdapterInfo.relativePosition
+        );
+    }
+
+    public Object getRepresentObjectAt(int position) {
+        SubAdapterInfo subAdapterInfo = findSubAdapterInfoByPosition(position);
+        return subAdapterInfo.subAdapter.getRepresentObjectAt(
+                mSections.get(subAdapterInfo.adapterIndex).adapterData,
                 subAdapterInfo.relativePosition
         );
     }
 
     @Override
     public int getItemCount() {
-        return viewData.size();
+        int count = 0;
+        for (int i = 0; i < mSubAdapters.size(); i++) {
+            count += mSubAdapters.get(i).getItemCount(mSections.get(i).adapterData);
+        }
+        return count;
     }
 
     private SubAdapterInfo findSubAdapterInfoByPosition(int position) {
         int cursor = 0;
-        for (int i = 0; i < mSections.size(); i++) {
+        for (int i = 0; i < mSubAdapters.size(); i++) {
+            SubAdapter subAdapter = mSubAdapters.get(i);
             Section section = mSections.get(i);
-            int size = section.adapterData.size();
+            int size = subAdapter.getItemCount(section.adapterData);
             if (cursor <= position && position < cursor + size) {
-                return new SubAdapterInfo(mSubAdapters.get(i), position - cursor, cursor, size, i);
+                return new SubAdapterInfo(mSubAdapters.get(i), position - cursor, i);
             } else {
                 cursor += size;
             }
@@ -167,26 +192,18 @@ public class ComputationAdapter extends RecyclerView.Adapter {
         int globalViewType = viewType / 1000;
         SubAdapter subAdapter = typeSubAdapterMap.get(globalViewType);
         int index = mSubAdapters.indexOf(subAdapter);
-        int start = 0;
-        for (int i = 0; i < index; i++) {
-            start += mSections.get(i).adapterData.size();
-        }
 
-        return new SubAdapterInfo(subAdapter, 0, start, mSections.get(index).adapterData.size(), index);
+        return new SubAdapterInfo(subAdapter, 0, index);
     }
 
     class SubAdapterInfo {
         SubAdapter subAdapter;
         int relativePosition;
-        int sectionStartIndex;
-        int size;
         int adapterIndex;
 
-        SubAdapterInfo(SubAdapter subAdapter, int relativePosition, int sectionStartIndex, int size, int adapterIndex) {
+        SubAdapterInfo(SubAdapter subAdapter, int relativePosition, int adapterIndex) {
             this.subAdapter = subAdapter;
             this.relativePosition = relativePosition;
-            this.sectionStartIndex = sectionStartIndex;
-            this.size = size;
             this.adapterIndex = adapterIndex;
         }
     }

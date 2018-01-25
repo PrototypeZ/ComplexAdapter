@@ -124,8 +124,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getItemViewTypeInside(List<Entity> data, int position) {
-            return 0;
+        public int getItemCount(List<Entity> data) {
+            return data.size();
         }
 
         @Override
@@ -142,6 +142,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolderInside(List<Entity> data, ViewHolder holder, int position) {
             holder.tv.setText(data.get(position).data);
+        }
+
+        @Override
+        public Object getRepresentObjectAt(List<Entity> data, int position) {
+            return data.get(position);
         }
     }
 
@@ -180,8 +185,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getItemViewTypeInside(List<Entity> data, int position) {
-            return 0;
+        public int getItemCount(List<Entity> data) {
+            return data.size();
         }
 
         @Override
@@ -199,12 +204,21 @@ public class MainActivity extends AppCompatActivity {
         public void onBindViewHolderInside(List<Entity> data, ViewHolder holder, int position) {
             holder.tv.setText(data.get(position).data);
         }
+
+        @Override
+        public Object getRepresentObjectAt(List<Entity> data, int position) {
+            return data.get(position);
+        }
     }
 
 
     class Adapter3 extends RecyclerView.Adapter<ViewHolder> implements SubAdapter<Entity, ViewHolder> {
 
         List<Entity> mEntities = new ArrayList<>();
+
+        private static final int CONTENT = 0;
+        private static final int HEADER = 1;
+        private static final int BOTTOM = 2;
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -218,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return mEntities.size();
+            return getItemCount(mEntities);
         }
 
         // SubAdapter implementation
@@ -228,39 +242,91 @@ public class MainActivity extends AppCompatActivity {
             return Observable
                     .just(Arrays.asList(
                             new Entity("1"), new Entity("2"), new Entity("3"), new Entity("4"),
-                            new Entity("5"), new Entity("6"), new Entity("7"), new Entity("8")/*,
-                            new Entity("9"), new Entity("10"), new Entity("11"), new Entity("12"),
-                            new Entity("13"), new Entity("14"), new Entity("15"), new Entity("16"),
-                            new Entity("17"), new Entity("18"), new Entity("19"), new Entity("20"),
-                            new Entity("21"), new Entity("22"), new Entity("23"), new Entity("24")*/
+                            new Entity("5"), new Entity("6"), new Entity("7"), new Entity("8")
                     ))
                     .delay(3000, TimeUnit.MILLISECONDS)
                     .observeOn(Schedulers.io());
         }
 
         @Override
+        public int getItemCount(List<Entity> data) {
+            if (data.size() > 0) {
+                return data.size() + 2;
+            } else {
+                return 0;
+            }
+        }
+
+        @Override
         public int getItemViewTypeInside(List<Entity> data, int position) {
-            return 0;
+            if (position == 0) {
+                return HEADER;
+            } else if (position < data.size() + 1) {
+                return CONTENT;
+            } else {
+                return BOTTOM;
+            }
         }
 
         @Override
         public ViewHolder onCreateViewHolderInside(List<Entity> data, ViewGroup parent, int viewType) {
-            return new ViewHolder(
-                    LayoutInflater.from(parent.getContext()).inflate(
-                            R.layout.layout_rv1_item,
-                            parent,
-                            false
-                    )
-            );
+            switch (viewType) {
+                case HEADER:
+                    return new ViewHolder(
+                            LayoutInflater.from(parent.getContext()).inflate(
+                                    R.layout.layout_item_header,
+                                    parent,
+                                    false
+                            )
+                    );
+                case CONTENT:
+                    return new ViewHolder(
+                            LayoutInflater.from(parent.getContext()).inflate(
+                                    R.layout.layout_rv1_item,
+                                    parent,
+                                    false
+                            )
+                    );
+                case BOTTOM:
+                    return new ViewHolder(
+                            LayoutInflater.from(parent.getContext()).inflate(
+                                    R.layout.layout_item_bottom,
+                                    parent,
+                                    false
+                            )
+                    );
+                default:
+                    throw new IllegalArgumentException("unknown viewType:" + viewType);
+            }
         }
 
         @Override
         public void onBindViewHolderInside(List<Entity> data, ViewHolder holder, int position) {
-            holder.tv.setText(data.get(position).data);
+            if (position == 0) {
+                holder.tv.setText("Adapter3");
+            } else if (position < data.size() + 1) {
+                holder.tv.setText(data.get(position - 1).data);
+            } else {
+                holder.tv.setText("Adapter3 Bottom");
+            }
+        }
+
+        @Override
+        public Object getRepresentObjectAt(List<Entity> data, int position) {
+            if (position == 0) {
+                return HEADER;
+            } else if (position < data.size() + 1) {
+                return data.get(position - 1);
+            } else {
+                return BOTTOM;
+            }
         }
     }
 
     class Adapter4 implements SubAdapter<Entity, ViewHolder> {
+
+        private static final int CONTENT = 0;
+        private static final int HEADER = 1;
 
         // SubAdapter implementation
 
@@ -276,24 +342,63 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
+        public int getItemCount(List<Entity> data) {
+            if (data.size() > 0) {
+                return data.size() + 1;
+            } else {
+                return 0;
+            }
+        }
+
+        @Override
         public int getItemViewTypeInside(List<Entity> data, int position) {
-            return 0;
+            if (position == 0) {
+                return HEADER;
+            } else {
+                return CONTENT;
+            }
         }
 
         @Override
         public ViewHolder onCreateViewHolderInside(List<Entity> data, ViewGroup parent, int viewType) {
-            return new ViewHolder(
-                    LayoutInflater.from(parent.getContext()).inflate(
-                            R.layout.layout_rv2_item,
-                            parent,
-                            false
-                    )
-            );
+            switch (viewType) {
+                case HEADER:
+                    return new ViewHolder(
+                            LayoutInflater.from(parent.getContext()).inflate(
+                                    R.layout.layout_item_header,
+                                    parent,
+                                    false
+                            )
+                    );
+                case CONTENT:
+                    return new ViewHolder(
+                            LayoutInflater.from(parent.getContext()).inflate(
+                                    R.layout.layout_rv2_item,
+                                    parent,
+                                    false
+                            )
+                    );
+                default:
+                    throw new IllegalArgumentException("unknown viewType:" + viewType);
+            }
         }
 
         @Override
         public void onBindViewHolderInside(List<Entity> data, ViewHolder holder, int position) {
-            holder.tv.setText(data.get(position).data);
+            if (position == 0) {
+                holder.tv.setText("Adapter4");
+            } else {
+                holder.tv.setText(data.get(position - 1).data);
+            }
+        }
+
+        @Override
+        public Object getRepresentObjectAt(List<Entity> data, int position) {
+            if (position == 0) {
+                return HEADER;
+            } else {
+                return data.get(position - 1);
+            }
         }
     }
 }

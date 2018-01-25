@@ -61,7 +61,6 @@ public class ComplexAdapter extends RecyclerView.Adapter {
         for (int i = 0; i < subAdapters.size(); i++) {
             ComputationAdapter.Section section = new ComputationAdapter.Section(
                     i,
-                    subAdapters.get(i).getClass(),
                     new ArrayList<>()
             );
             sections.add(section);
@@ -75,6 +74,8 @@ public class ComplexAdapter extends RecyclerView.Adapter {
                 .flatMap(ComputationAdapter::refresh)
                 .observeOn(Schedulers.single())
                 .withLatestFrom(computationAdapterSubject, (sectionListPair, computationAdapter) -> {
+                    // 根据上一次的 computationAdapter 以及本次更新的 subAdapter 数据，生成新的 computationAdapter
+                    // 同时计算新生成的与老的之间的 diff
                     ComputationAdapter.Section updatedSection = sectionListPair.first;
                     List<AdapterItem> updatedList = sectionListPair.second;
 
@@ -160,7 +161,7 @@ public class ComplexAdapter extends RecyclerView.Adapter {
         DiffUtil.DiffResult mDiffResult;
         ComputationAdapter mComputationAdapter;
 
-        public ComputationResult(DiffUtil.DiffResult diffResult, ComputationAdapter computationAdapter) {
+        ComputationResult(DiffUtil.DiffResult diffResult, ComputationAdapter computationAdapter) {
             mDiffResult = diffResult;
             mComputationAdapter = computationAdapter;
         }
