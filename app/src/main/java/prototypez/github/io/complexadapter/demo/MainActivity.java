@@ -2,6 +2,7 @@ package prototypez.github.io.complexadapter.demo;
 
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,21 +39,44 @@ public class MainActivity extends AppCompatActivity {
 //        mBinding.rv2.setAdapter(new Adapter2(Arrays.asList(new Entity("c"), new Entity("d"))));
 //        mBinding.rv2.setLayoutManager(new LinearLayoutManager(this));
 
+        SubAdapter subAdapter3 = new Adapter3();
+        SubAdapter subAdapter4 = new Adapter4();
+
         ComplexAdapter adapter = new ComplexAdapter(
                 Arrays.asList(
 //                        new Adapter1(Arrays.asList(new Entity("a"), new Entity("b"))),
 //                        new Adapter2(Arrays.asList(new Entity("c"), new Entity("d"))),
 //                        new Adapter3(),
 //                        new Adapter4(),
-                        new Adapter3(),
-                        new Adapter4()
+                        subAdapter3,
+                        subAdapter4
                 ),
                 Arrays.asList(1, 2/*, 3, 4*/)
         );
 
+        adapter.setRefreshAdapterOrderObservable(
+                Observable
+                        .just(
+                                Pair.create(
+                                        Arrays.asList(subAdapter4, subAdapter3),
+                                        Arrays.asList(2, 1)
+                                )
+                        )
+                        .delay(7000, TimeUnit.MILLISECONDS)
+                        .startWith(
+                                Observable
+                                        .just(
+                                                Pair.create(
+                                                        Arrays.asList(subAdapter3, subAdapter4),
+                                                        Arrays.asList(1, 2)
+                                                )
+                                        )
+                        )
+        );
+
         FadeInUpAnimator animator = new FadeInUpAnimator();
-        animator.setAddDuration(2000);
-        animator.setRemoveDuration(2000);
+        animator.setAddDuration(1000);
+        animator.setRemoveDuration(1000);
 
         mBinding.rv1.setAdapter(adapter);
         mBinding.rv1.setItemAnimator(animator);

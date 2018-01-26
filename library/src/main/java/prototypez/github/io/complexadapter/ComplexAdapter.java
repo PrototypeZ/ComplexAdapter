@@ -1,6 +1,7 @@
 package prototypez.github.io.complexadapter;
 
 import android.support.annotation.MainThread;
+import android.support.v4.util.Pair;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.BehaviorSubject;
@@ -25,6 +27,8 @@ public class ComplexAdapter extends RecyclerView.Adapter {
 
     private PublishSubject<Object> refreshSignal = PublishSubject.create();
 
+    Observable<Pair<List<SubAdapter>, List<Integer>>> subAdapterAndTypes;
+
     public ComplexAdapter(List<SubAdapter> subAdapters, List<Integer> subAdapterTypes) {
 
         List<ComputationAdapter.Section> sections = new ArrayList<>();
@@ -36,11 +40,41 @@ public class ComplexAdapter extends RecyclerView.Adapter {
             sections.add(section);
         }
 
+        PublishSubject<ComputationResult> computationResultSubject = PublishSubject.create();
+
         computationAdapterSubject.onNext(new ComputationAdapter(subAdapters, sections, subAdapterTypes));
 
         refreshSignal
                 .debounce(300, TimeUnit.MILLISECONDS)
-                .withLatestFrom(computationAdapterSubject, (o, computationAdapter) -> computationAdapter)
+                .switchMap(o -> subAdapterAndTypes)
+                .observeOn(Schedulers.io())
+                .withLatestFrom(computationAdapterSubject, (pair, computationAdapter) -> {
+                    // 获得最新的 subAdapter 顺序，根据顺序重排 subAdapter
+                    List<SubAdapter> newSubAdapters = pair.first;
+                    List<Integer> newSubAdapterTypes = pair.second;
+                    List<ComputationAdapter.Section> newSections =
+                            computationAdapter.createNewSectionsFromNewSubAdapters(newSubAdapters);
+
+                    // 重排后新的 Adapter
+                    ComputationAdapter newComputationAdapter = new ComputationAdapter(
+                            newSubAdapters,
+                            newSections,
+                            newSubAdapterTypes
+                    );
+
+                    // 重排后，和老的 Adapter 做 Diff，通知视图
+                    computationResultSubject.onNext(
+                            new ComputationResult(
+                                    newComputationAdapter.compare(computationAdapter),
+                                    newComputationAdapter
+                            )
+                    );
+
+                    // 更新最新 Adapter 流
+                    computationAdapterSubject.onNext(newComputationAdapter);
+
+                    return newComputationAdapter;
+                })
                 .flatMap(ComputationAdapter::refresh)
                 .observeOn(Schedulers.single())
                 .withLatestFrom(computationAdapterSubject, (sectionListPair, computationAdapter) -> {
@@ -55,7 +89,7 @@ public class ComplexAdapter extends RecyclerView.Adapter {
                     ComputationAdapter currentAdapter = new ComputationAdapter(
                             computationAdapter.getSubAdapters(),
                             currentSections,
-                            subAdapterTypes
+                            computationAdapter.getAdapterTypes()
                     );
 
                     computationAdapterSubject.onNext(currentAdapter);
@@ -65,8 +99,15 @@ public class ComplexAdapter extends RecyclerView.Adapter {
                             currentAdapter
                     );
                 })
+                .subscribe(computationResultSubject::onNext);
+
+        computationResultSubject
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(computationResult -> updateViewData(computationResult.mDiffResult, computationResult.mComputationAdapter));
+    }
+
+    public void setRefreshAdapterOrderObservable(Observable<Pair<List<SubAdapter>, List<Integer>>> subAdapterAndTypes) {
+        this.subAdapterAndTypes = subAdapterAndTypes;
     }
 
 

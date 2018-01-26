@@ -33,6 +33,8 @@ public class ComputationAdapter extends RecyclerView.Adapter {
 
     private List<Section> mSections = new ArrayList<>();
 
+    private List<Integer> mTypes = new ArrayList<>();
+
     private Map<SubAdapter, Integer> subAdapterTypeMap = new HashMap<>();
 
     private SparseArray<SubAdapter> typeSubAdapterMap = new SparseArray<>();
@@ -87,6 +89,7 @@ public class ComputationAdapter extends RecyclerView.Adapter {
 
         mSubAdapters = subAdapters;
         mSections = sections;
+        mTypes = subAdapterTypes;
 
         for (int i = 0; i < subAdapters.size(); i++) {
             SubAdapter subAdapter = subAdapters.get(i);
@@ -111,6 +114,27 @@ public class ComputationAdapter extends RecyclerView.Adapter {
 
     List<SubAdapter> getSubAdapters() {
         return mSubAdapters;
+    }
+
+    List<Integer> getAdapterTypes() {
+        return mTypes;
+    }
+
+    List<Section> createNewSectionsFromNewSubAdapters(List<SubAdapter> subAdapters) {
+        List<Section> sections = new ArrayList<>();
+        for (int i = 0; i < subAdapters.size(); i++) {
+            int indexInOldSubAdapters = mSubAdapters.indexOf(subAdapters.get(i));
+            Section section;
+            if (indexInOldSubAdapters != -1) {
+                List<AdapterItem> adapterItems = new ArrayList<>();
+                adapterItems.addAll(mSections.get(indexInOldSubAdapters).adapterData);
+                section = new Section(i, adapterItems);
+            } else {
+                section = new Section(i, new ArrayList<>());
+            }
+            sections.add(section);
+        }
+        return sections;
     }
 
     List<Section> copySections() {
