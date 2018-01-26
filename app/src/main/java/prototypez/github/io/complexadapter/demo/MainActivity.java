@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
+import jp.wasabeef.recyclerview.animators.FadeInUpAnimator;
 import prototypez.github.io.complexadapter.AdapterItem;
 import prototypez.github.io.complexadapter.ComplexAdapter;
 import prototypez.github.io.complexadapter.SubAdapter;
@@ -39,15 +40,22 @@ public class MainActivity extends AppCompatActivity {
 
         ComplexAdapter adapter = new ComplexAdapter(
                 Arrays.asList(
-                        new Adapter1(Arrays.asList(new Entity("a"), new Entity("b"))),
-                        new Adapter2(Arrays.asList(new Entity("c"), new Entity("d"))),
+//                        new Adapter1(Arrays.asList(new Entity("a"), new Entity("b"))),
+//                        new Adapter2(Arrays.asList(new Entity("c"), new Entity("d"))),
+//                        new Adapter3(),
+//                        new Adapter4(),
                         new Adapter3(),
                         new Adapter4()
                 ),
-                Arrays.asList(1, 2, 3, 4)
+                Arrays.asList(1, 2/*, 3, 4*/)
         );
 
+        FadeInUpAnimator animator = new FadeInUpAnimator();
+        animator.setAddDuration(2000);
+        animator.setRemoveDuration(2000);
+
         mBinding.rv1.setAdapter(adapter);
+        mBinding.rv1.setItemAnimator(animator);
         mBinding.rv1.setLayoutManager(new LinearLayoutManager(this));
 
         mBinding.refresh.setOnClickListener(v -> adapter.refresh());
@@ -90,126 +98,126 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    class Adapter1 extends RecyclerView.Adapter<ViewHolder> implements SubAdapter<Entity, ViewHolder> {
-
-        List<Entity> mEntities;
-
-        Adapter1(List<Entity> entities) {
-            mEntities = entities;
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return onCreateViewHolderInside(mEntities, parent, viewType);
-        }
-
-        @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            onBindViewHolderInside(mEntities, holder, position);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mEntities.size();
-        }
-
-        // SubAdapter implementation
-
-        @Override
-        public Observable<List<Entity>> refreshData() {
-            return Observable
-                    .just(Arrays.asList(new Entity("1"), new Entity("2"), new Entity("3")))
-                    .delay(2000, TimeUnit.MILLISECONDS)
-                    .observeOn(Schedulers.io());
-        }
-
-        @Override
-        public int getItemCount(List<Entity> data) {
-            return data.size();
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolderInside(List<Entity> data, ViewGroup parent, int viewType) {
-            return new ViewHolder(
-                    LayoutInflater.from(parent.getContext()).inflate(
-                            R.layout.layout_rv1_item,
-                            parent,
-                            false
-                    )
-            );
-        }
-
-        @Override
-        public void onBindViewHolderInside(List<Entity> data, ViewHolder holder, int position) {
-            holder.tv.setText(data.get(position).data);
-        }
-
-        @Override
-        public Object getRepresentObjectAt(List<Entity> data, int position) {
-            return data.get(position);
-        }
-    }
-
-
-    class Adapter2 extends RecyclerView.Adapter<ViewHolder> implements SubAdapter<Entity, ViewHolder> {
-
-        List<Entity> mEntities;
-
-        Adapter2(List<Entity> entities) {
-            mEntities = entities;
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return onCreateViewHolderInside(mEntities, parent, viewType);
-        }
-
-        @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            onBindViewHolderInside(mEntities, holder, position);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mEntities.size();
-        }
-
-        // SubAdapter implementation
-
-        @Override
-        public Observable<List<Entity>> refreshData() {
-            return Observable
-                    .just(Arrays.asList(new Entity("1"), new Entity("2"), new Entity("3"), new Entity("4")))
-                    .delay(1000, TimeUnit.MILLISECONDS)
-                    .observeOn(Schedulers.io());
-        }
-
-        @Override
-        public int getItemCount(List<Entity> data) {
-            return data.size();
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolderInside(List<Entity> data, ViewGroup parent, int viewType) {
-            return new ViewHolder(
-                    LayoutInflater.from(parent.getContext()).inflate(
-                            R.layout.layout_rv2_item,
-                            parent,
-                            false
-                    )
-            );
-        }
-
-        @Override
-        public void onBindViewHolderInside(List<Entity> data, ViewHolder holder, int position) {
-            holder.tv.setText(data.get(position).data);
-        }
-
-        @Override
-        public Object getRepresentObjectAt(List<Entity> data, int position) {
-            return data.get(position);
-        }
-    }
+//    class Adapter1 extends RecyclerView.Adapter<ViewHolder> implements SubAdapter<Entity, ViewHolder> {
+//
+//        List<Entity> mEntities;
+//
+//        Adapter1(List<Entity> entities) {
+//            mEntities = entities;
+//        }
+//
+//        @Override
+//        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+//            return onCreateViewHolderInside(mEntities, parent, viewType);
+//        }
+//
+//        @Override
+//        public void onBindViewHolder(ViewHolder holder, int position) {
+//            onBindViewHolderInside(mEntities, holder, position);
+//        }
+//
+//        @Override
+//        public int getItemCount() {
+//            return mEntities.size();
+//        }
+//
+//        // SubAdapter implementation
+//
+//        @Override
+//        public Observable<List<Entity>> refreshData() {
+//            return Observable
+//                    .just(Arrays.asList(new Entity("1"), new Entity("2"), new Entity("3")))
+//                    .delay(500, TimeUnit.MILLISECONDS)
+//                    .observeOn(Schedulers.io());
+//        }
+//
+//        @Override
+//        public int getItemCount(List<Entity> data) {
+//            return data.size();
+//        }
+//
+//        @Override
+//        public ViewHolder onCreateViewHolderInside(List<Entity> data, ViewGroup parent, int viewType) {
+//            return new ViewHolder(
+//                    LayoutInflater.from(parent.getContext()).inflate(
+//                            R.layout.layout_rv1_item,
+//                            parent,
+//                            false
+//                    )
+//            );
+//        }
+//
+//        @Override
+//        public void onBindViewHolderInside(List<Entity> data, ViewHolder holder, int position) {
+//            holder.tv.setText(data.get(position).data);
+//        }
+//
+//        @Override
+//        public Object getRepresentObjectAt(List<Entity> data, int position) {
+//            return data.get(position);
+//        }
+//    }
+//
+//
+//    class Adapter2 extends RecyclerView.Adapter<ViewHolder> implements SubAdapter<Entity, ViewHolder> {
+//
+//        List<Entity> mEntities;
+//
+//        Adapter2(List<Entity> entities) {
+//            mEntities = entities;
+//        }
+//
+//        @Override
+//        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+//            return onCreateViewHolderInside(mEntities, parent, viewType);
+//        }
+//
+//        @Override
+//        public void onBindViewHolder(ViewHolder holder, int position) {
+//            onBindViewHolderInside(mEntities, holder, position);
+//        }
+//
+//        @Override
+//        public int getItemCount() {
+//            return mEntities.size();
+//        }
+//
+//        // SubAdapter implementation
+//
+//        @Override
+//        public Observable<List<Entity>> refreshData() {
+//            return Observable
+//                    .just(Arrays.asList(new Entity("1"), new Entity("2"), new Entity("3"), new Entity("4")))
+//                    .delay(1000, TimeUnit.MILLISECONDS)
+//                    .observeOn(Schedulers.io());
+//        }
+//
+//        @Override
+//        public int getItemCount(List<Entity> data) {
+//            return data.size();
+//        }
+//
+//        @Override
+//        public ViewHolder onCreateViewHolderInside(List<Entity> data, ViewGroup parent, int viewType) {
+//            return new ViewHolder(
+//                    LayoutInflater.from(parent.getContext()).inflate(
+//                            R.layout.layout_rv2_item,
+//                            parent,
+//                            false
+//                    )
+//            );
+//        }
+//
+//        @Override
+//        public void onBindViewHolderInside(List<Entity> data, ViewHolder holder, int position) {
+//            holder.tv.setText(data.get(position).data);
+//        }
+//
+//        @Override
+//        public Object getRepresentObjectAt(List<Entity> data, int position) {
+//            return data.get(position);
+//        }
+//    }
 
 
     class Adapter3 extends RecyclerView.Adapter<ViewHolder> implements SubAdapter<Entity, ViewHolder> {
@@ -241,10 +249,10 @@ public class MainActivity extends AppCompatActivity {
         public Observable<List<Entity>> refreshData() {
             return Observable
                     .just(Arrays.asList(
-                            new Entity("1"), new Entity("2"), new Entity("3"), new Entity("4"),
+//                            new Entity("1"), new Entity("2"), new Entity("3"), new Entity("4"),
                             new Entity("5"), new Entity("6"), new Entity("7"), new Entity("8")
                     ))
-                    .delay(3000, TimeUnit.MILLISECONDS)
+                    .delay(500, TimeUnit.MILLISECONDS)
                     .observeOn(Schedulers.io());
         }
 
@@ -334,10 +342,10 @@ public class MainActivity extends AppCompatActivity {
         public Observable<List<Entity>> refreshData() {
             return Observable
                     .just(Arrays.asList(
-                            new Entity("a"), new Entity("b"), new Entity("c"), new Entity("d"),
+//                            new Entity("a"), new Entity("b"), new Entity("c"), new Entity("d"),
                             new Entity("e"), new Entity("f"), new Entity("g"), new Entity("h")
                     ))
-                    .delay(4000, TimeUnit.MILLISECONDS)
+                    .delay(1000, TimeUnit.MILLISECONDS)
                     .observeOn(Schedulers.io());
         }
 
