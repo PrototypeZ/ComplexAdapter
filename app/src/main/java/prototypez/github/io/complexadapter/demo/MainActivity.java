@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
-import jp.wasabeef.recyclerview.animators.FadeInUpAnimator;
 import prototypez.github.io.complexadapter.AdapterItem;
 import prototypez.github.io.complexadapter.ComplexAdapter;
 import prototypez.github.io.complexadapter.SubAdapter;
@@ -74,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                         )
         );
 
-        FadeInUpAnimator animator = new FadeInUpAnimator();
+        RecyclerView.ItemAnimator animator = new CustomFadeInAnimator();
         animator.setAddDuration(1000);
         animator.setRemoveDuration(1000);
 
