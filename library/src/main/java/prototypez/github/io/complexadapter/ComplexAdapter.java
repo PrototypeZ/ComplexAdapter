@@ -27,7 +27,7 @@ public class ComplexAdapter extends RecyclerView.Adapter {
 
     private PublishSubject<Object> refreshSignal = PublishSubject.create();
 
-    Observable<Pair<List<SubAdapter>, List<Integer>>> subAdapterAndTypes;
+    private Observable<Pair<List<SubAdapter>, List<Integer>>> subAdapterAndTypes;
 
     public ComplexAdapter(List<SubAdapter> subAdapters, List<Integer> subAdapterTypes) {
 
@@ -35,7 +35,7 @@ public class ComplexAdapter extends RecyclerView.Adapter {
         for (int i = 0; i < subAdapters.size(); i++) {
             ComputationAdapter.Section section = new ComputationAdapter.Section(
                     i,
-                    new ArrayList<>()
+                    null
             );
             sections.add(section);
         }
@@ -81,10 +81,10 @@ public class ComplexAdapter extends RecyclerView.Adapter {
                     // 根据上一次的 computationAdapter 以及本次更新的 subAdapter 数据，生成新的 computationAdapter
                     // 同时计算新生成的与老的之间的 diff
                     ComputationAdapter.Section updatedSection = sectionListPair.first;
-                    List<AdapterItem> updatedList = sectionListPair.second;
+                    Object updatedData = sectionListPair.second;
 
                     List<ComputationAdapter.Section> currentSections = computationAdapter.copySections();
-                    currentSections.get(updatedSection.index).adapterData = updatedList;
+                    currentSections.get(updatedSection.index).adapterData = updatedData;
 
                     ComputationAdapter currentAdapter = new ComputationAdapter(
                             computationAdapter.getSubAdapters(),

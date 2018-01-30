@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -91,6 +90,16 @@ public class MainActivity extends AppCompatActivity {
         public ViewHolder(View itemView) {
             super(itemView);
             tv = itemView.findViewById(R.id.tv);
+        }
+    }
+
+    class Response {
+        int rc;
+        List<Entity> content;
+
+        public Response(int rc, List<Entity> content) {
+            this.rc = rc;
+            this.content = content;
         }
     }
 
@@ -243,9 +252,9 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
 
-    class Adapter3 extends RecyclerView.Adapter<ViewHolder> implements SubAdapter<Entity, ViewHolder> {
+    class Adapter3 extends RecyclerView.Adapter<ViewHolder> implements SubAdapter<Response, ViewHolder> {
 
-        List<Entity> mEntities = new ArrayList<>();
+        Response mResponse;
 
         private static final int CONTENT = 0;
         private static final int HEADER = 1;
@@ -253,46 +262,50 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return onCreateViewHolderInside(mEntities, parent, viewType);
+            return onCreateViewHolderInside(mResponse, parent, viewType);
         }
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            onBindViewHolderInside(mEntities, holder, position);
+            onBindViewHolderInside(mResponse, holder, position);
         }
 
         @Override
         public int getItemCount() {
-            return getItemCount(mEntities);
+            return getItemCount(mResponse);
         }
 
         // SubAdapter implementation
 
         @Override
-        public Observable<List<Entity>> refreshData() {
+        public Observable<Response> refreshData() {
             return Observable
-                    .just(Arrays.asList(
-//                            new Entity("1"), new Entity("2"), new Entity("3"), new Entity("4"),
-                            new Entity("5"), new Entity("6"), new Entity("7"), new Entity("8")
-                    ))
+                    .just(
+                            new Response(
+                                    200,
+                                    Arrays.asList(
+                                            new Entity("5"), new Entity("6"), new Entity("7"), new Entity("8")
+                                    )
+                            )
+                    )
                     .delay(500, TimeUnit.MILLISECONDS)
                     .observeOn(Schedulers.io());
         }
 
         @Override
-        public int getItemCount(List<Entity> data) {
-            if (data.size() > 0) {
-                return data.size() + 2;
+        public int getItemCount(Response data) {
+            if (data != null && data.content != null && data.content.size() > 0) {
+                return data.content.size() + 2;
             } else {
                 return 0;
             }
         }
 
         @Override
-        public int getItemViewTypeInside(List<Entity> data, int position) {
+        public int getItemViewTypeInside(Response data, int position) {
             if (position == 0) {
                 return HEADER;
-            } else if (position < data.size() + 1) {
+            } else if (position < data.content.size() + 1) {
                 return CONTENT;
             } else {
                 return BOTTOM;
@@ -300,7 +313,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public ViewHolder onCreateViewHolderInside(List<Entity> data, ViewGroup parent, int viewType) {
+        public ViewHolder onCreateViewHolderInside(Response data, ViewGroup parent, int viewType) {
             switch (viewType) {
                 case HEADER:
                     return new ViewHolder(
@@ -332,29 +345,29 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolderInside(List<Entity> data, ViewHolder holder, int position) {
+        public void onBindViewHolderInside(Response data, ViewHolder holder, int position) {
             if (position == 0) {
                 holder.tv.setText("Adapter3");
-            } else if (position < data.size() + 1) {
-                holder.tv.setText(data.get(position - 1).data);
+            } else if (position < data.content.size() + 1) {
+                holder.tv.setText(data.content.get(position - 1).data);
             } else {
                 holder.tv.setText("Adapter3 Bottom");
             }
         }
 
         @Override
-        public Object getRepresentObjectAt(List<Entity> data, int position) {
+        public Object getRepresentObjectAt(Response data, int position) {
             if (position == 0) {
                 return HEADER;
-            } else if (position < data.size() + 1) {
-                return data.get(position - 1);
+            } else if (position < data.content.size() + 1) {
+                return data.content.get(position - 1);
             } else {
                 return BOTTOM;
             }
         }
     }
 
-    class Adapter4 implements SubAdapter<Entity, ViewHolder> {
+    class Adapter4 implements SubAdapter<Response, ViewHolder> {
 
         private static final int CONTENT = 0;
         private static final int HEADER = 1;
@@ -362,27 +375,31 @@ public class MainActivity extends AppCompatActivity {
         // SubAdapter implementation
 
         @Override
-        public Observable<List<Entity>> refreshData() {
+        public Observable<Response> refreshData() {
             return Observable
-                    .just(Arrays.asList(
-//                            new Entity("a"), new Entity("b"), new Entity("c"), new Entity("d"),
-                            new Entity("e"), new Entity("f"), new Entity("g"), new Entity("h")
-                    ))
+                    .just(
+                            new Response(
+                                    200,
+                                    Arrays.asList(
+                                            new Entity("e"), new Entity("f"), new Entity("g"), new Entity("h")
+                                    )
+                            )
+                    )
                     .delay(1000, TimeUnit.MILLISECONDS)
                     .observeOn(Schedulers.io());
         }
 
         @Override
-        public int getItemCount(List<Entity> data) {
-            if (data.size() > 0) {
-                return data.size() + 1;
+        public int getItemCount(Response data) {
+            if (data != null && data.content != null && data.content.size() > 0) {
+                return data.content.size() + 1;
             } else {
                 return 0;
             }
         }
 
         @Override
-        public int getItemViewTypeInside(List<Entity> data, int position) {
+        public int getItemViewTypeInside(Response data, int position) {
             if (position == 0) {
                 return HEADER;
             } else {
@@ -391,7 +408,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public ViewHolder onCreateViewHolderInside(List<Entity> data, ViewGroup parent, int viewType) {
+        public ViewHolder onCreateViewHolderInside(Response data, ViewGroup parent, int viewType) {
             switch (viewType) {
                 case HEADER:
                     return new ViewHolder(
@@ -415,20 +432,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolderInside(List<Entity> data, ViewHolder holder, int position) {
+        public void onBindViewHolderInside(Response data, ViewHolder holder, int position) {
             if (position == 0) {
                 holder.tv.setText("Adapter4");
             } else {
-                holder.tv.setText(data.get(position - 1).data);
+                holder.tv.setText(data.content.get(position - 1).data);
             }
         }
 
         @Override
-        public Object getRepresentObjectAt(List<Entity> data, int position) {
+        public Object getRepresentObjectAt(Response data, int position) {
             if (position == 0) {
                 return HEADER;
             } else {
-                return data.get(position - 1);
+                return data.content.get(position - 1);
             }
         }
     }

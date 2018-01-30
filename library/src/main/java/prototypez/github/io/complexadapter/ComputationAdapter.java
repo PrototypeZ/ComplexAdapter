@@ -1,5 +1,7 @@
 package prototypez.github.io.complexadapter;
 
+import com.google.gson.Gson;
+
 import android.support.v4.util.Pair;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
+import io.reactivex.functions.BiFunction;
 
 /**
  * Created by zhounl on 2018/1/24.
@@ -21,13 +24,15 @@ public class ComputationAdapter extends RecyclerView.Adapter {
 
     static class Section {
         int index;
-        List<AdapterItem> adapterData;
+        Object adapterData;
 
-        Section(int index, List<AdapterItem> adapterData) {
+        Section(int index, Object adapterData) {
             this.index = index;
             this.adapterData = adapterData;
         }
     }
+
+    private static Gson sGson = new Gson();
 
     private List<SubAdapter> mSubAdapters = new ArrayList<>();
 
@@ -98,14 +103,14 @@ public class ComputationAdapter extends RecyclerView.Adapter {
         }
     }
 
-    Observable<Pair<Section, List<AdapterItem>>> refresh() {
+    Observable<Pair<Section, Object>> refresh() {
         Observable result = Observable.empty();
         for (int i = 0; i < mSections.size(); i++) {
             result = result.mergeWith(
                     Observable.combineLatest(
                             Observable.just(mSections.get(i)),
                             mSubAdapters.get(i).refreshData(),
-                            (section, list) -> Pair.create(section, list)
+                            (BiFunction<Section, Object, Pair<Section, Object>>) Pair::create
                     )
             );
         }
@@ -126,11 +131,11 @@ public class ComputationAdapter extends RecyclerView.Adapter {
             int indexInOldSubAdapters = mSubAdapters.indexOf(subAdapters.get(i));
             Section section;
             if (indexInOldSubAdapters != -1) {
-                List<AdapterItem> adapterItems = new ArrayList<>();
-                adapterItems.addAll(mSections.get(indexInOldSubAdapters).adapterData);
-                section = new Section(i, adapterItems);
+                Object oldAdapterData = mSections.get(indexInOldSubAdapters).adapterData;
+                Object adapterData = deepCopy(oldAdapterData);
+                section = new Section(i, adapterData);
             } else {
-                section = new Section(i, new ArrayList<>());
+                section = new Section(i, null);
             }
             sections.add(section);
         }
@@ -141,12 +146,21 @@ public class ComputationAdapter extends RecyclerView.Adapter {
         List<Section> sections = new ArrayList<>(mSections.size());
         for (int i = 0; i < mSections.size(); i++) {
             Section oldSection = mSections.get(i);
-            List<AdapterItem> adapterItems = new ArrayList<>();
-            adapterItems.addAll(oldSection.adapterData);
-            Section section = new Section(oldSection.index, adapterItems);
+            Object adapterData = deepCopy(oldSection.adapterData);
+            Section section = new Section(oldSection.index, adapterData);
             sections.add(section);
         }
         return sections;
+    }
+
+    private Object deepCopy(Object obj) {
+        if (obj == null) {
+            return null;
+        } else if (obj instanceof List) {
+            return sGson.fromJson(sGson.toJson(obj), List.class);
+        } else {
+            return sGson.fromJson(sGson.toJson(obj), obj.getClass());
+        }
     }
 
     @Override
