@@ -40,17 +40,7 @@ public class MainActivity extends AppCompatActivity {
         SubAdapter subAdapter3 = new Adapter3();
         SubAdapter subAdapter4 = new Adapter4();
 
-        ComplexAdapter adapter = new ComplexAdapter(
-                Arrays.asList(
-//                        new Adapter1(Arrays.asList(new Entity("a"), new Entity("b"))),
-//                        new Adapter2(Arrays.asList(new Entity("c"), new Entity("d"))),
-//                        new Adapter3(),
-//                        new Adapter4(),
-                        subAdapter3,
-                        subAdapter4
-                ),
-                Arrays.asList(1, 2/*, 3, 4*/)
-        );
+        ComplexAdapter adapter = new ComplexAdapter();
 
         adapter.setRefreshAdapterOrderObservable(
                 Observable

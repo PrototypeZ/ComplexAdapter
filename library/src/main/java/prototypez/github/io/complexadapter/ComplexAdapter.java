@@ -29,20 +29,11 @@ public class ComplexAdapter extends RecyclerView.Adapter {
 
     private Observable<Pair<List<SubAdapter>, List<Integer>>> subAdapterAndTypes;
 
-    public ComplexAdapter(List<SubAdapter> subAdapters, List<Integer> subAdapterTypes) {
-
-        List<ComputationAdapter.Section> sections = new ArrayList<>();
-        for (int i = 0; i < subAdapters.size(); i++) {
-            ComputationAdapter.Section section = new ComputationAdapter.Section(
-                    i,
-                    null
-            );
-            sections.add(section);
-        }
+    public ComplexAdapter() {
 
         PublishSubject<ComputationResult> computationResultSubject = PublishSubject.create();
 
-        computationAdapterSubject.onNext(new ComputationAdapter(subAdapters, sections, subAdapterTypes));
+        computationAdapterSubject.onNext(new ComputationAdapter(new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
 
         refreshSignal
                 .debounce(300, TimeUnit.MILLISECONDS)
