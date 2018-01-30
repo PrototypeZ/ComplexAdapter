@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView tv;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             tv = itemView.findViewById(R.id.tv);
         }
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         int rc;
         List<Entity> content;
 
-        public Response(int rc, List<Entity> content) {
+        Response(int rc, List<Entity> content) {
             this.rc = rc;
             this.content = content;
         }
@@ -107,26 +107,18 @@ public class MainActivity extends AppCompatActivity {
 
         String data;
 
-        public Entity(String data) {
+        Entity(String data) {
             this.data = data;
         }
 
         @Override
         public boolean isItemTheSameTo(AdapterItem adapterItem) {
-            if (adapterItem instanceof Entity) {
-                return ((Entity) adapterItem).data.equals(data);
-            } else {
-                return false;
-            }
+            return adapterItem instanceof Entity && ((Entity) adapterItem).data.equals(data);
         }
 
         @Override
         public boolean isContentTheSameTo(AdapterItem adapterItem) {
-            if (adapterItem instanceof Entity) {
-                return ((Entity) adapterItem).data.equals(data);
-            } else {
-                return false;
-            }
+            return adapterItem instanceof Entity && ((Entity) adapterItem).data.equals(data);
         }
     }
 
