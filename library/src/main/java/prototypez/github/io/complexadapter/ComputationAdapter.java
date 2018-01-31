@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.ViewGroup;
 
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Created by zhounl on 2018/1/24.
@@ -119,8 +121,11 @@ public class ComputationAdapter extends RecyclerView.Adapter {
             result = result.mergeWith(
                     Observable.combineLatest(
                             Observable.just(mSections.get(i)),
-                            mSubAdapters.get(i).refreshData(),
-                            (section, o) -> new SubAdapterRefreshResult(section, o, mTypes)
+                            mSubAdapters.get(i).refreshData().observeOn(Schedulers.single()),
+                            (section, o) -> {
+                                Log.i("ComplexAdapter", "[" + Thread.currentThread() + "]" + "get subAdapter data ok." + mTypes);
+                                return new SubAdapterRefreshResult(section, o, mTypes);
+                            }
                     )
             );
         }

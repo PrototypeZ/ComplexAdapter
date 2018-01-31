@@ -66,10 +66,6 @@ public class ComplexAdapter extends RecyclerView.Adapter {
                     return newComputationAdapter;
                 });
 
-//        seqRefreshObservable.subscribe();
-
-//        computationAdapterSubject.onNext();
-
         Observable<ComputationResult> subAdapterRefreshObservable = seqRefreshObservable
                 .switchMap(computationAdapter -> computationAdapter.refresh().takeUntil(seqRefreshObservable))
                 .observeOn(Schedulers.single())
