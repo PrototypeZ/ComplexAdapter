@@ -2,7 +2,6 @@ package prototypez.github.io.complexadapter;
 
 import com.google.gson.Gson;
 
-import android.support.v4.util.Pair;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.BiFunction;
 
 /**
  * Created by zhounl on 2018/1/24.
@@ -103,14 +101,26 @@ public class ComputationAdapter extends RecyclerView.Adapter {
         }
     }
 
-    Observable<Pair<Section, Object>> refresh() {
+    class SubAdapterRefreshResult {
+        Section refreshedSection;
+        Object data;
+        List<Integer> types;
+
+        public SubAdapterRefreshResult(Section refreshedSection, Object data, List<Integer> types) {
+            this.refreshedSection = refreshedSection;
+            this.data = data;
+            this.types = types;
+        }
+    }
+
+    Observable<SubAdapterRefreshResult> refresh() {
         Observable result = Observable.empty();
         for (int i = 0; i < mSections.size(); i++) {
             result = result.mergeWith(
                     Observable.combineLatest(
                             Observable.just(mSections.get(i)),
                             mSubAdapters.get(i).refreshData(),
-                            (BiFunction<Section, Object, Pair<Section, Object>>) Pair::create
+                            (section, o) -> new SubAdapterRefreshResult(section, o, mTypes)
                     )
             );
         }

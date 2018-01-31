@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
                                         Arrays.asList(2, 1)
                                 )
                         )
-                        .delay(7000, TimeUnit.MILLISECONDS)
+                        .delay(1000, TimeUnit.MILLISECONDS)
                         .startWith(
                                 Observable
                                         .just(
@@ -88,6 +88,16 @@ public class MainActivity extends AppCompatActivity {
         List<Entity> content;
 
         Response(int rc, List<Entity> content) {
+            this.rc = rc;
+            this.content = content;
+        }
+    }
+
+    class Response2 {
+        int rc;
+        List<Entity> content;
+
+        Response2(int rc, List<Entity> content) {
             this.rc = rc;
             this.content = content;
         }
@@ -349,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    class Adapter4 implements SubAdapter<Response, ViewHolder> {
+    class Adapter4 implements SubAdapter<Response2, ViewHolder> {
 
         private static final int CONTENT = 0;
         private static final int HEADER = 1;
@@ -357,10 +367,10 @@ public class MainActivity extends AppCompatActivity {
         // SubAdapter implementation
 
         @Override
-        public Observable<Response> refreshData() {
+        public Observable<Response2> refreshData() {
             return Observable
                     .just(
-                            new Response(
+                            new Response2(
                                     200,
                                     Arrays.asList(
                                             new Entity("e"), new Entity("f"), new Entity("g"), new Entity("h")
@@ -372,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getItemCount(Response data) {
+        public int getItemCount(Response2 data) {
             if (data != null && data.content != null && data.content.size() > 0) {
                 return data.content.size() + 1;
             } else {
@@ -381,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getItemViewTypeInside(Response data, int position) {
+        public int getItemViewTypeInside(Response2 data, int position) {
             if (position == 0) {
                 return HEADER;
             } else {
@@ -390,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public ViewHolder onCreateViewHolderInside(Response data, ViewGroup parent, int viewType) {
+        public ViewHolder onCreateViewHolderInside(Response2 data, ViewGroup parent, int viewType) {
             switch (viewType) {
                 case HEADER:
                     return new ViewHolder(
@@ -414,7 +424,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolderInside(Response data, ViewHolder holder, int position) {
+        public void onBindViewHolderInside(Response2 data, ViewHolder holder, int position) {
             if (position == 0) {
                 holder.tv.setText("Adapter4");
             } else {
@@ -423,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public Object getRepresentObjectAt(Response data, int position) {
+        public Object getRepresentObjectAt(Response2 data, int position) {
             if (position == 0) {
                 return HEADER;
             } else {
